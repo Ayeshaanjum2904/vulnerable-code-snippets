@@ -14,4 +14,8 @@ COPY config/supervisord.conf /etc/supervisord.conf
 
 EXPOSE 1337
 
+# Add non-root user
+RUN useradd -m appuser
+USER appuser
+
 ENTRYPOINT [ "/usr/bin/supervisord", "-c", "/etc/supervisord.conf" ]
