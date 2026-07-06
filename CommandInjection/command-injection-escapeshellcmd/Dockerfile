@@ -2,7 +2,7 @@
 FROM php:8.2-apache
 
 #Install and update system dependencies
-RUN apt update -y; apt install -y supervisor apache2 pandoc
+RUN apt update -y && apt install -y supervisor apache2 pandoc
 WORKDIR /var/www/html/
 
 #Prepare and setup the working directory
@@ -21,5 +21,7 @@ RUN a2enmod speling
 RUN chown -R www-data /var/www/html/
 
 EXPOSE 1337
+
+USER www-data
 
 ENTRYPOINT [ "/usr/bin/supervisord", "-c", "/etc/supervisord.conf" ]

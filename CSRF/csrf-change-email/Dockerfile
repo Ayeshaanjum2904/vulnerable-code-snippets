@@ -2,7 +2,7 @@
 FROM php:8.2-apache
 
 #Install and update system dependencies
-RUN apt update -y; apt install -y supervisor apache2
+RUN apt update -y && apt install -y supervisor apache2
 WORKDIR /var/www/html/
 
 #Prepare and setup the working directory
@@ -13,8 +13,9 @@ COPY vsnippet .
 COPY config/supervisord.conf /etc/supervisord.conf
 COPY config/apache.conf /etc/apache2/sites-enabled/apache.conf
 
-#Give permission:
-#RUN chown -R www-data /var/www/html/
+#Switch to non-root user
+RUN useradd -m appuser
+USER appuser
 
 EXPOSE 1337
 

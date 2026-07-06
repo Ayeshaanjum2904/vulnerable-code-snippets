@@ -1,7 +1,7 @@
 FROM python:3
 
 #Install and update system dependencies
-RUN apt update -y; apt install -y supervisor curl
+RUN apt update -y && apt install -y supervisor curl
 RUN pip install flask
 
 #Prepare and setup the working directory
@@ -14,5 +14,9 @@ EXPOSE 1337
 
 #Disable pycache
 ENV PYTHONDONTWRITEBYTECODE=1
+
+# Add non-root user
+RUN useradd -m appuser
+USER appuser
 
 ENTRYPOINT [ "/usr/bin/supervisord", "-c", "/etc/supervisord.conf" ]
