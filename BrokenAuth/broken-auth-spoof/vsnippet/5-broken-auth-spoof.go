@@ -23,24 +23,39 @@ func main() {
 
 	http.HandleFunc("/admin",
 		func(w http.ResponseWriter, r *http.Request) {
-			
-      		//Client checks:
+			// Client checks:
 			h := &Headers{}
-			h.Role, _ = r.Cookie("role")
-			h.ClientIP = r.Header.Get("X-Forwarded-For")
 
-			//Render HTML
-			fmt.Fprintln(w, html())
+			// Handle missing or invalid cookie
+			roleCookie, err := r.Cookie("role")
+			if err != nil {
+				http.Error(w, "Missing or invalid role cookie", http.StatusBadRequest)
+				return
+			}
+			h.Role = roleCookie
 
+			// Handle missing or invalid X-Forwarded-For header
+			clientIP := r.Header.Get("X-Forwarded-For")
+			if clientIP == "" {
+				http.Error(w, "Missing X-Forwarded-For header", http.StatusBadRequest)
+				return
+			}
+			h.ClientIP = clientIP
+
+			// Render HTML only after validation
 			if strings.ToLower(h.Role.Value) == "admin" {
 				for _, host := range []string{"127.0.0.1", "localhost"} {
 					if host == strings.Split(h.ClientIP, ":")[0] {
 						fmt.Fprintln(w, html_AdminDashboard())
+						return
 					}
 				}
 			}
+
+			http.Error(w, "Unauthorized access", http.StatusUnauthorized)
 		})
-	//Start web server
+
+	// Start web server
 	run()
 }
 
@@ -50,8 +65,8 @@ func html() string {
 
 func html_AdminDashboard() string {
 	return "<h1>Logging in...</h1>"
-	//Loading Admin dashboard content...
-	//Code..
+	// Loading Admin dashboard content...
+	// Code..
 }
 
 func run() {
