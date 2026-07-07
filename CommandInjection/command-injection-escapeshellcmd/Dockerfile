@@ -20,6 +20,12 @@ RUN a2enmod speling
 #Give permission:
 RUN chown -R www-data /var/www/html/
 
+# Add a non-root user and switch to it
+RUN useradd -r appuser && USER appuser
+
+# Add a healthcheck instruction
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 CMD curl -f http://localhost:1337/ || exit 1
+
 EXPOSE 1337
 
 ENTRYPOINT [ "/usr/bin/supervisord", "-c", "/etc/supervisord.conf" ]
