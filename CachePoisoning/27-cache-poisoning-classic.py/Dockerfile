@@ -15,4 +15,8 @@ EXPOSE 1337
 #Disable pycache
 ENV PYTHONDONTWRITEBYTECODE=1
 
+# Add non-root user
+RUN useradd -m appuser
+USER appuser
+
 ENTRYPOINT [ "/usr/bin/supervisord", "-c", "/etc/supervisord.conf" ]

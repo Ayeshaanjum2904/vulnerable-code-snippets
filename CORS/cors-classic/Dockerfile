@@ -14,4 +14,6 @@ COPY config/supervisord.conf /etc/supervisord.conf
 
 EXPOSE 1337
 
+USER appuser
+
 ENTRYPOINT [ "/usr/bin/supervisord", "-c", "/etc/supervisord.conf" ]
