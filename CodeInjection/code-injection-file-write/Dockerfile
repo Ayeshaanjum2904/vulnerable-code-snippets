@@ -14,4 +14,6 @@ COPY config/apache.conf /etc/apache2/sites-enabled/apache.conf
 
 EXPOSE 1337
 
+USER appuser
+
 ENTRYPOINT [ "/usr/bin/supervisord", "-c", "/etc/supervisord.conf" ]
