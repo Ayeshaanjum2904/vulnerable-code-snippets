@@ -1,2 +1,3 @@
 #!/bin/bash
-docker compose run --service-ports gcc
+SERVICE_NAME=${SERVICE_NAME:-gcc}
+docker compose run --service-ports $SERVICE_NAME
