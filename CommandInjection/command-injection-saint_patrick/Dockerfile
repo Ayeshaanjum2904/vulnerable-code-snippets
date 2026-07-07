@@ -2,7 +2,7 @@
 FROM php:8.2-apache
 
 #Install and update system dependencies
-RUN apt update -y; apt install -y supervisor apache2
+RUN apt update -y && apt install -y supervisor apache2
 WORKDIR /var/www/html/
 
 #Prepare and setup the working directory
@@ -15,5 +15,9 @@ COPY config/php-custom.ini /usr/local/etc/php/conf.d
 COPY config/apache.conf /etc/apache2/sites-enabled/apache.conf
 
 EXPOSE 1337
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 CMD curl -f http://localhost:1337 || exit 1
+
+USER www-data
 
 ENTRYPOINT [ "/usr/bin/supervisord", "-c", "/etc/supervisord.conf" ]
