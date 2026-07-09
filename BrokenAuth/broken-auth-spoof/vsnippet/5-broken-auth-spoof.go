@@ -6,6 +6,7 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"strings"
@@ -75,9 +76,7 @@ func run() {
 }
 
 func isValidIP(ip string) bool {
-	// Basic validation for IP format
-	if strings.Count(ip, ".") == 3 || strings.Count(ip, ":") > 0 {
-		return true
-	}
-	return false
+	// Enhanced validation for IP format
+	parsedIP := net.ParseIP(ip)
+	return parsedIP != nil
 }
