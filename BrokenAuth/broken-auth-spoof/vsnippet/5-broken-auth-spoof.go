@@ -25,33 +25,40 @@ func main() {
 	http.HandleFunc("/admin",
 		func(w http.ResponseWriter, r *http.Request) {
 			// Client checks:
-			h := &Headers{}
-			roleCookie, err := r.Cookie("role")
-			if err != nil {
-				http.Error(w, "Missing or invalid role cookie", http.StatusBadRequest)
-				return
-			}
-			h.Role = roleCookie
-			h.ClientIP = r.Header.Get("X-Forwarded-For")
+		h := &Headers{}
+		roleCookie, err := r.Cookie("role")
+		if err != nil {
+			http.Error(w, "Missing or invalid role cookie", http.StatusBadRequest)
+			return
+		}
+		h.Role = roleCookie
+		h.ClientIP = r.Header.Get("X-Forwarded-For")
 
-			// Render HTML
-			fmt.Fprintln(w, html())
+		if h.ClientIP == "" {
+			http.Error(w, "Missing or invalid X-Forwarded-For header", http.StatusBadRequest)
+			return
+		}
 
-			if strings.ToLower(h.Role.Value) == "admin" {
-				allowedHosts := strings.Split(os.Getenv("ALLOWED_HOSTS"), ",")
-				for _, host := range allowedHosts {
-					if host == strings.Split(h.ClientIP, ":")[0] {
-						fmt.Fprintln(w, html_AdminDashboard())
-					}
+		// Render HTML
+		fmt.Fprintln(w, html())
+
+		if strings.ToLower(h.Role.Value) == "admin" {
+			allowedHosts := strings.Split(os.Getenv("ALLOWED_HOSTS"), ",")
+			for _, host := range allowedHosts {
+				if host == strings.Split(h.ClientIP, ":")[0] {
+					fmt.Fprintln(w, html_AdminDashboard())
+					return
 				}
 			}
-		})
+			http.Error(w, "Access denied: Unauthorized host", http.StatusForbidden)
+		}
+	})
 	// Start web server
 	run()
 }
 
 func html() string {
-	return "<p>Welcome we verify that your an administrator, wait...</p>"
+	return "<p>Welcome we verify that you're an administrator, wait...</p>"
 }
 
 func html_AdminDashboard() string {
