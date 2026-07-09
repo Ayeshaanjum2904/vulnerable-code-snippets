@@ -16,7 +16,8 @@ EXPOSE 1337
 ENV PYTHONDONTWRITEBYTECODE=1
 
 # Add non-root user and switch to it
-RUN useradd -r appuser && USER appuser
+RUN useradd -r appuser
+USER appuser
 
 # Add HEALTHCHECK instruction
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 CMD curl -f http://localhost:1337/health || exit 1
