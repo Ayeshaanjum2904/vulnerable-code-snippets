@@ -24,3 +24,12 @@ services:
             MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
         ports:
             - "127.0.0.1:1338:3306"
+secrets:
+    mysql_database:
+        file: ./secrets/MYSQL_DATABASE
+    mysql_user:
+        file: ./secrets/MYSQL_USER
+    mysql_password:
+        file: ./secrets/MYSQL_PASSWORD
+    mysql_root_password:
+        file: ./secrets/MYSQL_ROOT_PASSWORD"
