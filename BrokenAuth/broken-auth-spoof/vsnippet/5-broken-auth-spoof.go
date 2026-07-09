@@ -27,14 +27,14 @@ func main() {
 			// Client checks:
 		h := &Headers{}
 		roleCookie, err := r.Cookie("role")
-		if err != nil {
+		if err != nil || roleCookie.Value == "" {
 			http.Error(w, "Missing or invalid role cookie", http.StatusBadRequest)
 			return
 		}
 		h.Role = roleCookie
-		h.ClientIP = r.Header.Get("X-Forwarded-For")
 
-		if h.ClientIP == "" {
+		h.ClientIP = r.Header.Get("X-Forwarded-For")
+		if h.ClientIP == "" || !isValidIP(h.ClientIP) {
 			http.Error(w, "Missing or invalid X-Forwarded-For header", http.StatusBadRequest)
 			return
 		}
@@ -72,4 +72,12 @@ func run() {
 	addr := fmt.Sprintf("0.0.0.0:%d", port)
 	fmt.Printf("Server listening on : http://%s\n", addr)
 	http.ListenAndServe(addr, nil)
+}
+
+func isValidIP(ip string) bool {
+	// Basic validation for IP format
+	if strings.Count(ip, ".") == 3 || strings.Count(ip, ":") > 0 {
+		return true
+	}
+	return false
 }
