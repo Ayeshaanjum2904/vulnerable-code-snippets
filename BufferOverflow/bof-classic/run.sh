@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 
-CONFIG_FILE=${CONFIG_FILE:-"config.env"}
+CONFIG_FILE=${CONFIG_FILE:?"Error: CONFIG_FILE environment variable is not set. Exiting."}
 
-if [[ -z "$CONFIG_FILE" || ! -f "$CONFIG_FILE" ]]; then
-  echo "Error: Configuration file is either not set or not found. Exiting."
+if [[ ! -f "$CONFIG_FILE" ]]; then
+  echo "Error: Configuration file $CONFIG_FILE not found. Exiting."
   exit 1
 fi
 
@@ -13,7 +13,7 @@ if ! source "$CONFIG_FILE"; then
   exit 1
 fi
 
-if [ -z "$(docker compose ps -q)" ]; then
+if ! docker compose ps -q > /dev/null 2>&1; then
   echo "No running containers found. Starting the service..."
   if ! docker compose run --service-ports "$SERVICE_NAME"; then
     echo "Error: Failed to start the service using docker compose. Exiting."
