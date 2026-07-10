@@ -35,8 +35,12 @@ func main() {
 		h.Role = roleCookie
 
 		h.ClientIP = r.Header.Get("X-Forwarded-For")
-		if h.ClientIP == "" || !isValidIP(h.ClientIP) {
-			http.Error(w, "Missing or invalid X-Forwarded-For header", http.StatusBadRequest)
+		if h.ClientIP == "" {
+			http.Error(w, "Missing X-Forwarded-For header", http.StatusBadRequest)
+			return
+		}
+		if !isValidIP(h.ClientIP) {
+			http.Error(w, "Invalid IP address in X-Forwarded-For header", http.StatusBadRequest)
 			return
 		}
 
@@ -78,5 +82,12 @@ func run() {
 func isValidIP(ip string) bool {
 	// Enhanced validation for IP format
 	parsedIP := net.ParseIP(ip)
-	return parsedIP != nil
+	if parsedIP == nil {
+		return false
+	}
+	// Additional check for private IP ranges (optional, based on requirements)
+	if strings.HasPrefix(ip, "10.") || strings.HasPrefix(ip, "192.168.") || strings.HasPrefix(ip, "172.") {
+		return true
+	}
+	return true
 }
