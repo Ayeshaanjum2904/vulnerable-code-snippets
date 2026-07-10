@@ -18,9 +18,14 @@ services:
         image: mysql
         restart: always
         environment:
-            MYSQL_DATABASE: ywhvsnippet
-            MYSQL_USER: vsnippet
-            MYSQL_PASSWORD: vsnippet
-            MYSQL_ROOT_PASSWORD: supervulnerableroot
+            MYSQL_DATABASE: ${MYSQL_DATABASE}
+            MYSQL_USER: ${MYSQL_USER}
+            MYSQL_PASSWORD: /run/secrets/mysql_password
+            MYSQL_ROOT_PASSWORD: /run/secrets/mysql_root_password
         ports:
             - "127.0.0.1:1338:3306"
+secrets:
+    mysql_password:
+        file: ./secrets/mysql_password.txt
+    mysql_root_password:
+        file: ./secrets/mysql_root_password.txt

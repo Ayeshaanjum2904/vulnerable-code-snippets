@@ -6,7 +6,9 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -23,35 +25,51 @@ func main() {
 
 	http.HandleFunc("/admin",
 		func(w http.ResponseWriter, r *http.Request) {
-			
-      		//Client checks:
-			h := &Headers{}
-			h.Role, _ = r.Cookie("role")
-			h.ClientIP = r.Header.Get("X-Forwarded-For")
+			// Client checks:
+		h := &Headers{}
+		roleCookie, err := r.Cookie("role")
+		if err != nil || roleCookie.Value == "" {
+			http.Error(w, "Missing or invalid role cookie", http.StatusBadRequest)
+			return
+		}
+		h.Role = roleCookie
 
-			//Render HTML
-			fmt.Fprintln(w, html())
+		h.ClientIP = r.Header.Get("X-Forwarded-For")
+		if h.ClientIP == "" {
+			http.Error(w, "Missing X-Forwarded-For header", http.StatusBadRequest)
+			return
+		}
+		if !isValidIP(h.ClientIP) {
+			http.Error(w, "Invalid IP address in X-Forwarded-For header", http.StatusBadRequest)
+			return
+		}
 
-			if strings.ToLower(h.Role.Value) == "admin" {
-				for _, host := range []string{"127.0.0.1", "localhost"} {
-					if host == strings.Split(h.ClientIP, ":")[0] {
-						fmt.Fprintln(w, html_AdminDashboard())
-					}
+		// Render HTML
+		fmt.Fprintln(w, html())
+
+		if strings.ToLower(h.Role.Value) == "admin" {
+			allowedHosts := strings.Split(os.Getenv("ALLOWED_HOSTS"), ",")
+			for _, host := range allowedHosts {
+				if host == strings.Split(h.ClientIP, ":")[0] {
+					fmt.Fprintln(w, html_AdminDashboard())
+					return
 				}
 			}
-		})
-	//Start web server
+			http.Error(w, "Access denied: Unauthorized host", http.StatusForbidden)
+		}
+	})
+	// Start web server
 	run()
 }
 
 func html() string {
-	return "<p>Welcome we verify that your an administrator, wait...</p>"
+	return "<p>Welcome we verify that you're an administrator, wait...</p>"
 }
 
 func html_AdminDashboard() string {
 	return "<h1>Logging in...</h1>"
-	//Loading Admin dashboard content...
-	//Code..
+	// Loading Admin dashboard content...
+	// Code..
 }
 
 func run() {
@@ -59,4 +77,17 @@ func run() {
 	addr := fmt.Sprintf("0.0.0.0:%d", port)
 	fmt.Printf("Server listening on : http://%s\n", addr)
 	http.ListenAndServe(addr, nil)
+}
+
+func isValidIP(ip string) bool {
+	// Enhanced validation for IP format
+	parsedIP := net.ParseIP(ip)
+	if parsedIP == nil {
+		return false
+	}
+	// Additional check for private IP ranges (optional, based on requirements)
+	if strings.HasPrefix(ip, "10.") || strings.HasPrefix(ip, "192.168.") || strings.HasPrefix(ip, "172.") {
+		return true
+	}
+	return true
 }
