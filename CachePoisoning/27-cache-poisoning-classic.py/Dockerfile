@@ -15,4 +15,11 @@ EXPOSE 1337
 #Disable pycache
 ENV PYTHONDONTWRITEBYTECODE=1
 
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 CMD curl -f http://localhost:1337/health || exit 1
+
+# Switch to non-root user
+RUN useradd -m appuser
+USER appuser
+
 ENTRYPOINT [ "/usr/bin/supervisord", "-c", "/etc/supervisord.conf" ]

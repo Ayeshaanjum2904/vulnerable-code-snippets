@@ -14,4 +14,8 @@ COPY config/apache.conf /etc/apache2/sites-enabled/apache.conf
 
 EXPOSE 1337
 
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 CMD curl -f http://localhost:1337 || exit 1
+
+USER appuser
+
 ENTRYPOINT [ "/usr/bin/supervisord", "-c", "/etc/supervisord.conf" ]
