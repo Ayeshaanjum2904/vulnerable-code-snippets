@@ -7,6 +7,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -23,24 +24,29 @@ func main() {
 
 	http.HandleFunc("/admin",
 		func(w http.ResponseWriter, r *http.Request) {
-			
-      		//Client checks:
+			// Client checks:
 			h := &Headers{}
-			h.Role, _ = r.Cookie("role")
+			roleCookie, err := r.Cookie("role")
+			if err != nil {
+				http.Error(w, "Missing or invalid role cookie", http.StatusBadRequest)
+				return
+			}
+			h.Role = roleCookie
 			h.ClientIP = r.Header.Get("X-Forwarded-For")
 
-			//Render HTML
+			// Render HTML
 			fmt.Fprintln(w, html())
 
 			if strings.ToLower(h.Role.Value) == "admin" {
-				for _, host := range []string{"127.0.0.1", "localhost"} {
+				allowedHosts := strings.Split(os.Getenv("ALLOWED_HOSTS"), ",")
+				for _, host := range allowedHosts {
 					if host == strings.Split(h.ClientIP, ":")[0] {
 						fmt.Fprintln(w, html_AdminDashboard())
 					}
 				}
 			}
 		})
-	//Start web server
+	// Start web server
 	run()
 }
 
@@ -50,8 +56,8 @@ func html() string {
 
 func html_AdminDashboard() string {
 	return "<h1>Logging in...</h1>"
-	//Loading Admin dashboard content...
-	//Code..
+	// Loading Admin dashboard content...
+	// Code..
 }
 
 func run() {
