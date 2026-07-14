@@ -7,7 +7,7 @@ const pool = mysql.createPool({
   host: 'db-mysql',
   database: 'ywhvsnippet',
   user: 'vsnippet',
-  password: 'vsnippet',
+  password: process.env.DB_PASSWORD,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0

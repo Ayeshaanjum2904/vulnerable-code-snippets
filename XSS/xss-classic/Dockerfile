@@ -1,16 +1,23 @@
 FROM openjdk:11
 
-#Install and update system dependencies
+# Install and update system dependencies
 RUN apt update -y; apt install -y supervisor
 
-#Prepare and setup the working directory
-RUN mkdir -p /app
+# Create a non-root user and set permissions
+RUN useradd -r appuser && mkdir -p /app && chown appuser:appuser /app
 
+# Prepare and setup the working directory
 WORKDIR /app
 
 COPY vsnippet .
 COPY config/supervisord.conf /etc/supervisord.conf
 
+# Set HEALTHCHECK to monitor container health
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 CMD curl -f http://localhost:1337/health || exit 1
+
 EXPOSE 1337
+
+# Switch to non-root user
+USER appuser
 
 ENTRYPOINT [ "/usr/bin/supervisord", "-c", "/etc/supervisord.conf" ]
